@@ -1,14 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Response, Request
+from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from sqlalchemy import text, select
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
-from database import get_db
-from schemas import AccountCreate, AccountRead, AccountUpdate
+
 from exceptions import NotFoundError, ConflictError
-import models
-from typing import List
+from routers.accounts import router as accounts_router
 
 app = FastAPI()
 
@@ -36,62 +31,5 @@ async def validation_handler(request: Request, exc: RequestValidationError):
 async def health_check():
     return {"status": "ok"}
 
-# @app.get("/db-check")
-# def db_check(db: Session = Depends(get_db)):
-#     result = db.execute(text("SELECT 1")).scalar()
-#     return {"db_says": result}
 
-@app.post("/accounts", response_model=AccountRead, status_code=status.HTTP_201_CREATED)
-async def create_account(account_in: AccountCreate, db: Session = Depends(get_db)):
-    db_account = models.Account(**account_in.model_dump())
-
-    db.add(db_account)
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise ConflictError(
-            f"Account for owner '{account_in.owner_name}' in {account_in.currency} already exists."
-        )
-
-    db.refresh(db_account)
-    return db_account
-
-
-@app.get("/accounts/{id}", response_model=AccountRead)
-async def get_account(id: int, db: Session = Depends(get_db)):
-    account = db.query(models.Account).filter(models.Account.id == id).first()
-    if not account:
-        raise NotFoundError(f"Account with ID {id} doesn't exist.")
-    return account
-
-
-@app.get("/accounts", response_model=List[AccountRead])
-async def get_accounts(db: Session = Depends(get_db)):
-    statement = select(models.Account)
-    accounts = db.scalars(statement).all()
-    return accounts
-
-
-@app.patch("/accounts/{id}", response_model=AccountRead, status_code=status.HTTP_200_OK)
-async def patch_account(account_update: AccountUpdate, id: int, db: Session = Depends(get_db)):
-    account = db.get(models.Account, id)
-    if not account:
-        raise NotFoundError(f"Account with ID {id} doesn't exist.")
-
-    update_data = account_update.model_dump(exclude_unset=True)
-    for f, v in update_data.items():
-        setattr(account, f, v)
-    db.commit()
-    db.refresh(account)
-    return account
-
-
-@app.delete("/accounts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_account(id: int, db: Session = Depends(get_db)):
-    account = db.get(models.Account, id)
-    if not account:
-        raise NotFoundError(f"Account with ID {id} doesn't exist.")
-    db.delete(account)
-    db.commit()
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+app.include_router(accounts_router)
