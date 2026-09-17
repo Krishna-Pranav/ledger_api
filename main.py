@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 
 from exceptions import NotFoundError, ConflictError
 from routers.accounts import router as accounts_router
+from routers.users import router as users_router
 
 app = FastAPI()
 
@@ -33,3 +34,4 @@ async def health_check():
 
 
 app.include_router(accounts_router)
+app.include_router(users_router)

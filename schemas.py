@@ -20,3 +20,19 @@ class AccountRead(BaseModel):
 class AccountUpdate(BaseModel):
     owner_name: str | None = None
     balance: Decimal = Field(default=Decimal("0.0000"), max_digits=19, decimal_places=4)
+
+class UserCreate(BaseModel):
+    email: str
+    password: str = Field(min_length=8)
+
+class UserRead(BaseModel):
+    id: int
+    email: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class UserUpdate(BaseModel):
+    old_password: str
+    new_password: str = Field(min_length=8)
+    reenter_password: str = Field(min_length=8)
