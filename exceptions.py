@@ -6,3 +6,13 @@ class NotFoundError(Exception):
 class ConflictError(Exception):
     def __init__(self, message: str):
         self.message = message
+
+
+class UnauthorizedError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+
+
+class ForbiddenError(Exception):
+    def __init__(self, message: str):
+        self.message(message)

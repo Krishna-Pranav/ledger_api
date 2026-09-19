@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 import models
 from schemas import UserCreate, UserUpdate
-from exceptions import NotFoundError, ConflictError
+from exceptions import NotFoundError, ConflictError, UnauthorizedError
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(
@@ -50,6 +50,18 @@ def get_user(db: Session, id: int) -> models.User:
     user = db.get(models.User, id)
     if not user:
         raise NotFoundError(f"User with ID {id} doesn't exist.")
+    return user
+
+
+def get_user_by_email(db: Session, email: str) -> models.User | None:
+    statement = select(models.User).where(models.User.email == email)
+    return db.scalars(statement).first()
+
+
+def authenticate_user(db: Session, email: str, password: str) -> models.User:
+    user = get_user_by_email(db, email)
+    if not user or not verify_password(password, user.password_hash):
+        raise UnauthorizedError("Invalid email or password.")
     return user
 
 

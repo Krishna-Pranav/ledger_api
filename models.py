@@ -1,7 +1,7 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from decimal import Decimal
 from datetime import datetime
-from sqlalchemy import String, Numeric, func, UniqueConstraint, CheckConstraint
+from sqlalchemy import String, Numeric, func, UniqueConstraint, CheckConstraint, ForeignKey
 
 class Base(DeclarativeBase):
     pass
@@ -10,6 +10,7 @@ class Account(Base):
     __tablename__ = "accounts"
     __table_args__ = (UniqueConstraint("owner_name", "currency", name="uq_accounts_owner_currency"),)
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     owner_name: Mapped[str] = mapped_column(String(30))
     currency: Mapped[str] = mapped_column(String(3))
     balance: Mapped[Decimal] = mapped_column(Numeric(precision=19, scale=4), server_default="0")

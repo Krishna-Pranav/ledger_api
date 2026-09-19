@@ -36,3 +36,15 @@ class UserUpdate(BaseModel):
     old_password: str
     new_password: str = Field(min_length=8)
     reenter_password: str = Field(min_length=8)
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class TokenPair(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+class RefreshRequest(BaseModel):
+    refresh_token: str

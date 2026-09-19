@@ -2,9 +2,10 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from exceptions import NotFoundError, ConflictError
+from exceptions import NotFoundError, ConflictError, UnauthorizedError, ForbiddenError
 from routers.accounts import router as accounts_router
 from routers.users import router as users_router
+from routers.auth import router as auth_router
 
 app = FastAPI()
 
@@ -28,6 +29,16 @@ async def validation_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, content=error_body("VALIDATION_ERROR", str(exc.errors())))
 
 
+@app.exception_handler(UnauthorizedError)
+async def unauthorized_handler(request: Request, exc: UnauthorizedError):
+    return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content=error_body("UNAUTHORIZED", exc.message))
+
+
+@app.exception_handler(ForbiddenError)
+async def forbidden_handler(request: Request, exc: ForbiddenError):
+    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content=error_body("FORBIDDEN", exc.message))
+
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
@@ -35,3 +46,4 @@ async def health_check():
 
 app.include_router(accounts_router)
 app.include_router(users_router)
+app.include_router(auth_router)

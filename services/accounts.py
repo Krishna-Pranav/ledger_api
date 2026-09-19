@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 
 import models
 from schemas import AccountCreate, AccountUpdate
-from exceptions import NotFoundError, ConflictError
+from exceptions import NotFoundError, ConflictError, ForbiddenError
 
 
-def create_account(db: Session, account_in: AccountCreate) -> models.Account:
-    db_account = models.Account(**account_in.model_dump())
+def create_account(db: Session, account_in: AccountCreate, user_id: int) -> models.Account:
+    db_account = models.Account(**account_in.model_dump(), user_id=user_id)
 
     db.add(db_account)
     try:
@@ -23,15 +23,17 @@ def create_account(db: Session, account_in: AccountCreate) -> models.Account:
     return db_account
 
 
-def get_account(db: Session, id: int) -> models.Account:
+def get_account(db: Session, id: int, user_id: int) -> models.Account:
     account = db.get(models.Account, id)
     if not account:
         raise NotFoundError(f"Account with ID {id} doesn't exist.")
+    if account.user_id != user_id:
+        raise ForbiddenError(f"Account {id} doesn't belong to you.")
     return account
 
 
-def list_accounts(db: Session) -> list[models.Account]:
-    statement = select(models.Account)
+def list_accounts(db: Session, user_id: int) -> list[models.Account]:
+    statement = select(models.Account).where(models.Account.user_id == user_id)
     return list(db.scalars(statement).all())
 
 
