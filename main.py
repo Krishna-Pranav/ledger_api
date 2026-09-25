@@ -6,6 +6,7 @@ from exceptions import NotFoundError, ConflictError, UnauthorizedError, Forbidde
 from routers.accounts import router as accounts_router
 from routers.users import router as users_router
 from routers.auth import router as auth_router
+from routers.transfers import router as transfers_router
 
 app = FastAPI()
 
@@ -47,3 +48,4 @@ async def health_check():
 app.include_router(accounts_router)
 app.include_router(users_router)
 app.include_router(auth_router)
+app.include_router(transfers_router)

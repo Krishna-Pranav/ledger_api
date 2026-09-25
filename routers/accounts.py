@@ -28,11 +28,11 @@ async def list_accounts(db: Session = Depends(get_db), current_user: models.User
 
 
 @router.patch("/{id}", response_model=AccountRead)
-async def patch_account(id: int, account_update: AccountUpdate, db: Session = Depends(get_db)):
-    return accounts_service.update_account(db, id, account_update)
+async def patch_account(id: int, account_update: AccountUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    return accounts_service.update_account(db, id, account_update, current_user.id)
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_account(id: int, db: Session = Depends(get_db)):
-    accounts_service.delete_account(db, id)
+async def delete_account(id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    accounts_service.delete_account(db, id, current_user.id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -15,4 +15,4 @@ class UnauthorizedError(Exception):
 
 class ForbiddenError(Exception):
     def __init__(self, message: str):
-        self.message(message)
+        self.message = message

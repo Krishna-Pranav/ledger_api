@@ -48,3 +48,17 @@ class TokenPair(BaseModel):
 
 class RefreshRequest(BaseModel):
     refresh_token: str
+
+class TransferCreate(BaseModel):
+    from_account_id: int
+    to_account_id: int
+    amount: Decimal = Field(max_digits=19, decimal_places=4)
+
+class TransferRead(BaseModel):
+    id: int
+    from_account_id: int
+    to_account_id: int
+    amount: Decimal
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

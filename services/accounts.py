@@ -37,8 +37,8 @@ def list_accounts(db: Session, user_id: int) -> list[models.Account]:
     return list(db.scalars(statement).all())
 
 
-def update_account(db: Session, id: int, account_update: AccountUpdate) -> models.Account:
-    account = get_account(db, id)  # raises NotFoundError if missing
+def update_account(db: Session, id: int, account_update: AccountUpdate, user_id: int) -> models.Account:
+    account = get_account(db, id, user_id)  # raises NotFoundError if missing
 
     update_data = account_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -48,7 +48,7 @@ def update_account(db: Session, id: int, account_update: AccountUpdate) -> model
     return account
 
 
-def delete_account(db: Session, id: int) -> None:
-    account = get_account(db, id)  # raises NotFoundError if missing
+def delete_account(db: Session, id: int, user_id: int) -> None:
+    account = get_account(db, id, user_id)  # raises NotFoundError if missing
     db.delete(account)
     db.commit()
